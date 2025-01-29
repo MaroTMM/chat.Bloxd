@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloxd Online Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #chat-box { width: 300px; height: 400px; border: 1px solid #ccc; overflow-y: scroll; margin: 0 auto; padding: 10px; }
+        #message { width: 200px; }
+        #send { padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <h2>Online Chat</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="username" placeholder="Your Name">
+    <input type="text" id="message" placeholder="Type a message">
+    <button id="send">Send</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyArr5tBAakZRrGAezt8zhGQX46psN5AEp8",
+            authDomain: "chat-bloxd.firebaseapp.com",
+            projectId: "chat-bloxd",
+            storageBucket: "chat-bloxd.appspot.com",
+            messagingSenderId: "823486556275",
+            appId: "1:823486556275:web:088d71358f30b6fb312206",
+            measurementId: "G-GX5VWB3YX9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        const messagesRef = ref(database, 'messages');
+
+        // Send message
+        document.getElementById('send').addEventListener('click', function() {
+            const username = document.getElementById('username').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (username && message) {
+                push(messagesRef, { username, message })
+                    .then(() => document.getElementById('message').value = '')
+                    .catch(error => console.error("Error sending message:", error));
+            } else {
+                alert("Please enter both name and message.");
+            }
+        });
+
+        // Receive messages
+        onChildAdded(messagesRef, (snapshot) => {
+            const msg = snapshot.val();
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><strong>${msg.username}:</strong> ${msg.message}</p>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>
